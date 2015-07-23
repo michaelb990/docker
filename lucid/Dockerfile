@@ -27,9 +27,9 @@ RUN sed -i 's|session    required     pam_loginuid.so|session    optional     pa
 RUN mkdir -p /var/run/sshd
 
 # Add this to enable JDK 7 on lucid.
-# ADD jdk7.tar.gz /usr/lib/jvm
-# RUN mv /usr/lib/jvm/jdk1.7* /usr/lib/jvm/jdk1.7 && \
-#     ln -fs /usr/lib/jvm/jdk1.7/bin/java /usr/bin/java
+ADD jdk7.tar.gz /usr/lib/jvm
+RUN mv /usr/lib/jvm/jdk1.7* /usr/lib/jvm/jdk1.7 && \
+    ln -fs /usr/lib/jvm/jdk1.7/bin/java /usr/bin/java
 
 # Add user jenkins to the image and set password.
 RUN useradd jenkins && \
