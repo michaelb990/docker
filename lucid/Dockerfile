@@ -45,6 +45,7 @@ ADD docker-init /etc/docker-init
 RUN sudo -Eu jenkins /etc/docker-init/rbenv-install.sh
 RUN sudo -Eu jenkins /etc/docker-init/node-install.sh
 
+RUN apt-get install -y fontconfig # phantomjs dependency
 ADD gitconfig /home/jenkins/.gitconfig
 
 # Standard SSH port
