@@ -1,27 +1,36 @@
 # Based off of evarga/jenkins-slave
-
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
+# It is based off of ubuntu 10.04, because :'(
+
 FROM ubuntu:10.04
 MAINTAINER Michael Brown <michael.brown@socrata.com>
 
-# Make sure the package repository is up to date, upgrade out of date packages.
 # Change repositories to point to old-releases as lucid is EOL
 RUN sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-RUN apt-get update && \
-    apt-get -y upgrade
 
-# Install software dependencies.
-# python-software-properties contains the `add-apt-repository` script
-# ppa:git-core/ppa contains a more recent version of git that works with the way Jenkins drops credentials
-RUN eval ${build_proxy_env} && \
+# Add a line in limits.conf to make the ulimit higher, default of 1024 is from the stone age
+RUN echo '*                hard    nofile          525488' >> /etc/security/limits.conf
+
+# Make sure the package repository is up to date, upgrade out of date packages.
+# Add python-software-properties, which installs the `add-apt-repository` script
+# Enable a new repo for git, the default for Ubuntu 10.04 is way too old
+RUN apt-get update && \
+    apt-get -y upgrade && \
     apt-get install -y python-software-properties && \
-    add-apt-repository ppa:git-core/ppa && \
-    apt-get update && \
-    apt-get install -y openssh-server git-core
+    add-apt-repository ppa:git-core/ppa
+
+# Install software dependencies to enable Jenkins to SSH and Git properly.
+RUN apt-get update && \
+    apt-get install -y \
+            git-core \
+            openssh-server
 
 # Configure SSH server.
 RUN sed -i 's|session    required     pam_loginuid.so|session    optional     pam_loginuid.so|g' /etc/pam.d/sshd
 RUN mkdir -p /var/run/sshd
+
+# Add gitconfig file to force https, proxies won't allow SSH out
+ADD gitconfig /home/jenkins/.gitconfig
 
 # Add this to enable JDK 7 on lucid.
 # Required to run Jenkins slave process and connect to Jenkins master (running Java7 as well)
@@ -37,16 +46,31 @@ RUN useradd jenkins && \
     chsh -s /bin/bash jenkins
 
 # Ruby-specific dependencies (TODO: pull out into language specific slaves)
-RUN eval ${build_proxy_env} && \
-    apt-get install -y autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev \
-    libncurses5-dev libffi-dev libgdbm3 libgdbm-dev wget curl libtool gnome-common
+RUN apt-get update && apt-get install -y \
+            autoconf \
+            bison \
+            build-essential \
+            curl \
+            fontconfig \
+            gnome-common \
+            libffi-dev \
+            libgdbm-dev \
+            libgdbm3 \
+            libncurses5-dev \
+            libreadline6-dev \
+            libssl-dev \
+            libtool \
+            libxml-dev \
+            libxslt-dev
+            libyaml-dev \
+            wget \
+            zlib1g-dev
 
-ADD docker-init /etc/docker-init
-RUN sudo -Eu jenkins /etc/docker-init/rbenv-install.sh
-RUN sudo -Eu jenkins /etc/docker-init/node-install.sh
-
-RUN apt-get install -y fontconfig # phantomjs dependency
-ADD gitconfig /home/jenkins/.gitconfig
+# Add init scripts to the docker container and run them as the jenkins user
+# This sets up rbenv/ruby and node for frontend builds
+ADD init-scripts /etc/init-scripts
+RUN sudo -Eu jenkins /etc/init-scripts/rbenv-install.sh
+RUN sudo -Eu jenkins /etc/init-scripts/node-install.sh
 
 # Standard SSH port
 EXPOSE 22
