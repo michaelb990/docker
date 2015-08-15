@@ -14,13 +14,15 @@ RUN echo '*                hard    nofile          525488' >> /etc/security/limi
 # Make sure the package repository is up to date, upgrade out of date packages.
 # Add python-software-properties, which installs the `add-apt-repository` script
 # Enable a new repo for git, the default for Ubuntu 10.04 is way too old
-RUN apt-get update && \
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y python-software-properties && \
     add-apt-repository ppa:git-core/ppa
 
 # Install software dependencies to enable Jenkins to SSH and Git properly.
-RUN apt-get update && \
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && \
     apt-get install -y \
             git-core \
             openssh-server
@@ -46,7 +48,9 @@ RUN useradd jenkins && \
     chsh -s /bin/bash jenkins
 
 # Ruby-specific dependencies (TODO: pull out into language specific slaves)
-RUN apt-get update && apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && \
+    apt-get install -y \
             autoconf \
             bison \
             build-essential \
@@ -60,8 +64,8 @@ RUN apt-get update && apt-get install -y \
             libreadline6-dev \
             libssl-dev \
             libtool \
-            libxml-dev \
-            libxslt-dev
+            libxml2-dev \
+            libxslt-dev \
             libyaml-dev \
             wget \
             zlib1g-dev
