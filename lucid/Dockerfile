@@ -8,8 +8,9 @@ MAINTAINER Michael Brown <michael.brown@socrata.com>
 # Change repositories to point to old-releases as lucid is EOL
 RUN sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 
-# Add a line in limits.conf to make the ulimit higher, default of 1024 is from the stone age
-RUN echo '*                hard    nofile          525488' >> /etc/security/limits.conf
+# Add lines in limits.conf to make the ulimit higher, default of 1024 is from the stone age
+RUN echo '*  	hard	    nofile  	525488' >> /etc/security/limits.conf
+RUN echo '*  	soft	    nofile  	525488' >> /etc/security/limits.conf
 
 # Make sure the package repository is up to date, upgrade out of date packages.
 # Add python-software-properties, which installs the `add-apt-repository` script
@@ -71,8 +72,8 @@ RUN apt-get update && \
 # Add init scripts to the docker container and run them as the jenkins user
 # This sets up rbenv/ruby and node for frontend builds
 ADD init-scripts /etc/init-scripts
-RUN sudo -Eu jenkins /etc/init-scripts/rbenv-install.sh
-RUN sudo -Eu jenkins /etc/init-scripts/node-install.sh
+RUN sudo -Eu jenkins /etc/init-scripts/rbenv-install.sh && \
+    sudo -Eu jenkins /etc/init-scripts/node-install.sh
 
 # Standard SSH port
 EXPOSE 22
