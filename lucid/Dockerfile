@@ -14,15 +14,14 @@ RUN echo '*                hard    nofile          525488' >> /etc/security/limi
 # Make sure the package repository is up to date, upgrade out of date packages.
 # Add python-software-properties, which installs the `add-apt-repository` script
 # Enable a new repo for git, the default for Ubuntu 10.04 is way too old
-RUN DEBIAN_FRONTEND=noninteractive \
-    apt-get update && \
-    apt-get -y upgrade && \
-    apt-get install -y python-software-properties && \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y python-software-properties && \
     add-apt-repository ppa:git-core/ppa
 
 # Install software dependencies to enable Jenkins to SSH and Git properly.
-RUN DEBIAN_FRONTEND=noninteractive \
-    apt-get update && \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
     apt-get install -y \
             git-core \
             openssh-server
@@ -37,8 +36,7 @@ ADD gitconfig /home/jenkins/.gitconfig
 # Add this to enable JDK 7 on lucid.
 # Required to run Jenkins slave process and connect to Jenkins master (running Java7 as well)
 ADD jdk7.tar.gz /usr/lib/jvm
-RUN mv /usr/lib/jvm/jdk1.7* /usr/lib/jvm/jdk1.7 && \
-    ln -fs /usr/lib/jvm/jdk1.7/bin/java /usr/bin/java
+RUN ln -fs /usr/lib/jvm/jdk1.7*/bin/java /usr/bin/java
 
 # Add user jenkins to the image and set password.
 RUN useradd jenkins && \
@@ -48,8 +46,8 @@ RUN useradd jenkins && \
     chsh -s /bin/bash jenkins
 
 # Ruby-specific dependencies (TODO: pull out into language specific slaves)
-RUN DEBIAN_FRONTEND=noninteractive \
-    apt-get update && \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
     apt-get install -y \
             autoconf \
             bison \
