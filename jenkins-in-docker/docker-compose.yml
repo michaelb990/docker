@@ -1,0 +1,19 @@
+version: '2'
+services:
+    master:
+      build: master
+      command: /sbin/my_init --skip-startup-files
+      ports:
+        - "8080:8080"
+    worker1:
+      build: worker
+      depends_on:
+        - master
+      environment:
+        WORKER_NAME: worker1
+    worker2:
+      build: worker
+      depends_on:
+        - master
+      environment:
+        WORKER_NAME: worker2

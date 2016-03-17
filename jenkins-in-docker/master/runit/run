@@ -1,0 +1,10 @@
+#!/bin/sh
+
+exec /sbin/setuser jenkins java \
+  -Xmx${JAVA_XMX} \
+  -Xms${JAVA_XMS} \
+  -Djava.awt.headless=true \
+  -jar /usr/share/jenkins/jenkins.war \
+    --webroot=/var/cache/jenkins/war \
+    --httpPort=8080 \
+    --ajp13Port=-1
