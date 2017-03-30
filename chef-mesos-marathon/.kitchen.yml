@@ -1,0 +1,31 @@
+---
+driver:
+  name: vagrant
+  network:
+    - ["forwarded_port", {guest: 8080, host: 8080}]
+    - ["forwarded_port", {guest: 5050, host: 5050}]
+
+provisioner:
+  name: chef_solo
+
+platforms:
+  - name: ubuntu-14.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[mb-mesos-marathon-stack::default]
+    attributes:
+      marathon:
+        flags:  # run Marathon without ZooKeeper
+          ha: false
+          master: 'localhost:5050'
+          internal_store_backend: 'mem'
+      mesos:
+        master:
+          flags:
+            hostname: 'localhost'
+        slave:
+          flags:
+            containerizers: 'mesos,docker'
+            hostname: 'localhost'

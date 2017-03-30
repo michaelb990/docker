@@ -1,0 +1,12 @@
+name             'mb-mesos-marathon-stack'
+maintainer       'Socrata, Inc.'
+maintainer_email 'YOUR_EMAIL'
+license          'All rights reserved'
+description      'Installs/Configures mb-mesos-marathon-stack'
+long_description 'Installs/Configures mb-mesos-marathon-stack'
+version          '0.1.0'
+
+depends 'docker'
+depends 'marathon'
+depends 'mesos'
+depends 'zookeeper'
